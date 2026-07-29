@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Banner } from './components/Banner';
 import { ProductGrid } from './components/ProductGrid';
-import { FilterSidebar } from './components/FilterSidebar';
+import { FilterDrawerModal } from './components/FilterDrawerModal';
+import { AboutUsSection } from './components/AboutUsSection';
 import { WhatsAppModal } from './components/WhatsAppModal';
 import { ProductDetailModal } from './components/ProductDetailModal';
 import { AdminDashboard } from './components/Admin/AdminDashboard';
@@ -20,7 +21,7 @@ export const App: React.FC = () => {
   const isCurrentlyAdmin = () => {
     const p = window.location.pathname;
     const h = window.location.hash;
-    return p.endsWith('/admin') || p.endsWith('/admin/') || h.includes('admin');
+    return p.endsWith('/gp') || p.endsWith('/gp/') || h.includes('gp');
   };
 
   const [currentRoute, setCurrentRoute] = useState<string>(
@@ -39,6 +40,8 @@ export const App: React.FC = () => {
     maxPrice: 300,
     sortBy: 'featured',
   });
+
+  const [isFilterDrawerOpen, setIsFilterDrawerOpen] = useState(false);
 
   const [adminUser, setAdminUser] = useState<AdminUser>({
     email: 'admin@trendypearls.shop',
@@ -69,7 +72,7 @@ export const App: React.FC = () => {
   const navigateTo = (route: string) => {
     setCurrentRoute(route);
     const basePath = window.location.pathname.startsWith('/trendypearls') ? '/trendypearls/' : '/';
-    const path = route === 'admin' ? `${basePath}#admin` : basePath;
+    const path = route === 'admin' ? `${basePath}#gp` : basePath;
     window.history.pushState({}, '', path);
   };
 
@@ -109,6 +112,14 @@ export const App: React.FC = () => {
     });
   };
 
+  const handleSelectPriceDeal = (maxPrice: number, cat?: string) => {
+    setFilters((prev) => ({
+      ...prev,
+      maxPrice,
+      selectedCategory: cat || 'all',
+    }));
+  };
+
   const handleStockUpdate = async (
     id: string,
     action: 'increment' | 'decrement' | 'set_in_stock' | 'set_sold_out' | 'set_out_of_stock'
@@ -127,7 +138,6 @@ export const App: React.FC = () => {
       await loadData();
     } catch (err) {
       console.error('Error saving product:', err);
-      throw err;
     }
   };
 
@@ -137,9 +147,14 @@ export const App: React.FC = () => {
       await loadData();
     } catch (err: any) {
       console.error('Error deleting product:', err);
-      alert('Delete notice: ' + (err.message || err));
     }
   };
+
+  const activeFilterCount =
+    (filters.selectedCategory !== 'all' ? 1 : 0) +
+    (filters.stockStatus !== 'all' ? 1 : 0) +
+    (filters.maxPrice < 300 ? 1 : 0) +
+    (filters.sortBy !== 'featured' ? 1 : 0);
 
   const inStockCount = products.filter((p) => p.stockStatus === 'in_stock' && p.stockQuantity > 0).length;
 
@@ -183,6 +198,8 @@ export const App: React.FC = () => {
       <Navbar
         searchQuery={filters.searchQuery}
         onSearchChange={handleSearchChange}
+        onOpenFilterDrawer={() => setIsFilterDrawerOpen(true)}
+        activeFilterCount={activeFilterCount}
       />
 
       <main className="max-w-7xl mx-auto px-4 sm:px-8 py-4 flex-grow w-full">
@@ -191,33 +208,26 @@ export const App: React.FC = () => {
           inStockItems={inStockCount}
           onSelectCategory={(cat) => handleFilterChange({ selectedCategory: cat })}
           selectedCategory={filters.selectedCategory}
+          onSelectPriceDeal={handleSelectPriceDeal}
         />
 
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start my-6">
-          <div className="lg:col-span-1">
-            <FilterSidebar
-              filters={filters}
-              categories={categories}
-              onFilterChange={handleFilterChange}
-              onResetFilters={handleResetFilters}
+        <div className="my-6">
+          {loading ? (
+            <div className="glass-panel p-12 text-center my-8 flex flex-col items-center gap-3">
+              <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
+              <p className="text-sm font-semibold text-zinc-400">Loading catalog items...</p>
+            </div>
+          ) : (
+            <ProductGrid
+              products={products}
+              onOpenWhatsAppModal={(prod) => setSelectedWhatsAppProduct(prod)}
+              onQuickView={(prod) => setSelectedDetailProduct(prod)}
             />
-          </div>
-
-          <div className="lg:col-span-3">
-            {loading ? (
-              <div className="glass-panel p-12 text-center my-8 flex flex-col items-center gap-3">
-                <div className="w-10 h-10 border-4 border-amber-500 border-t-transparent rounded-full animate-spin"></div>
-                <p className="text-sm font-semibold text-zinc-400">Loading catalog items...</p>
-              </div>
-            ) : (
-              <ProductGrid
-                products={products}
-                onOpenWhatsAppModal={(prod) => setSelectedWhatsAppProduct(prod)}
-                onQuickView={(prod) => setSelectedDetailProduct(prod)}
-              />
-            )}
-          </div>
+          )}
         </div>
+
+        {/* Townsville SEO About Us Section */}
+        <AboutUsSection />
       </main>
 
       <footer className="glass-header mt-12 border-t border-amber-500/30 py-8 px-4 sm:px-8 text-xs text-zinc-400">
@@ -227,16 +237,7 @@ export const App: React.FC = () => {
               TP
             </div>
             <span className="font-bold text-white text-sm font-serif">TRENDY PEARLS</span>
-            <span>— Boutique Collection</span>
-          </div>
-
-          <div className="flex items-center gap-4 text-zinc-400">
-            <button
-              onClick={() => navigateTo('admin')}
-              className="text-zinc-400 hover:text-amber-400 transition-colors"
-            >
-              Admin Portal
-            </button>
+            <span>— Fancy Store, Townsville</span>
           </div>
 
           <div className="text-zinc-400">
@@ -244,6 +245,15 @@ export const App: React.FC = () => {
           </div>
         </div>
       </footer>
+
+      <FilterDrawerModal
+        isOpen={isFilterDrawerOpen}
+        onClose={() => setIsFilterDrawerOpen(false)}
+        filters={filters}
+        categories={categories}
+        onFilterChange={handleFilterChange}
+        onResetFilters={handleResetFilters}
+      />
 
       {selectedWhatsAppProduct && (
         <WhatsAppModal
