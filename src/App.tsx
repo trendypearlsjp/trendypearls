@@ -17,8 +17,14 @@ import {
 } from './services/productService';
 
 export const App: React.FC = () => {
+  const isCurrentlyAdmin = () => {
+    const p = window.location.pathname;
+    const h = window.location.hash;
+    return p.endsWith('/admin') || p.endsWith('/admin/') || h.includes('admin');
+  };
+
   const [currentRoute, setCurrentRoute] = useState<string>(
-    window.location.pathname === '/admin' ? 'admin' : 'shop'
+    isCurrentlyAdmin() ? 'admin' : 'shop'
   );
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -46,19 +52,24 @@ export const App: React.FC = () => {
 
   useEffect(() => {
     const handlePopState = () => {
-      if (window.location.pathname === '/admin') {
+      if (isCurrentlyAdmin()) {
         setCurrentRoute('admin');
       } else {
         setCurrentRoute('shop');
       }
     };
     window.addEventListener('popstate', handlePopState);
-    return () => window.removeEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handlePopState);
+    };
   }, []);
 
   const navigateTo = (route: string) => {
     setCurrentRoute(route);
-    const path = route === 'admin' ? '/admin' : '/';
+    const basePath = window.location.pathname.startsWith('/trendypearls') ? '/trendypearls/' : '/';
+    const path = route === 'admin' ? `${basePath}#admin` : basePath;
     window.history.pushState({}, '', path);
   };
 
@@ -134,7 +145,7 @@ export const App: React.FC = () => {
 
   if (currentRoute === 'admin') {
     return (
-      <>
+      <div className="min-h-screen bg-black text-zinc-100">
         <AdminDashboard
           products={products}
           adminUser={adminUser}
@@ -163,12 +174,12 @@ export const App: React.FC = () => {
           }}
           onSave={handleSaveProduct}
         />
-      </>
+      </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-stone-950 text-zinc-100">
+    <div className="min-h-screen flex flex-col bg-black text-zinc-100">
       <Navbar
         searchQuery={filters.searchQuery}
         onSearchChange={handleSearchChange}
