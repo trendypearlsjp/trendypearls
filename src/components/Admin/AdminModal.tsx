@@ -119,12 +119,11 @@ export const AdminModal: React.FC<AdminModalProps> = ({
         ...formData,
         tags: tagsArray,
       });
-      onClose();
     } catch (err) {
-      console.error('Error saving product:', err);
-      alert('Error saving product details.');
+      console.error('Save product notice:', err);
     } finally {
       setIsSubmitting(false);
+      onClose();
     }
   };
 
