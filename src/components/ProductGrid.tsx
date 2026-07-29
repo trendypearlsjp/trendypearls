@@ -30,12 +30,12 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
 
   if (products.length === 0) {
     return (
-      <div className="glass-panel p-12 text-center my-8 max-w-lg mx-auto flex flex-col items-center gap-4">
-        <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center text-amber-600">
+      <div className="glass-panel p-12 text-center my-8 max-w-lg mx-auto flex flex-col items-center gap-4 border border-amber-500/30">
+        <div className="w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center text-amber-400">
           <PackageX className="w-8 h-8" />
         </div>
-        <h3 className="text-xl font-serif font-bold text-zinc-900">No Products Found</h3>
-        <p className="text-sm text-zinc-600">
+        <h3 className="text-xl font-serif font-bold text-white">No Products Found</h3>
+        <p className="text-sm text-zinc-400">
           We couldn't find any products matching your current search query or filter selection. Try adjusting your filters or search keywords.
         </p>
       </div>
@@ -44,18 +44,18 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4">
-        <div className="flex items-center gap-2 text-xs sm:text-sm text-zinc-700 font-medium">
-          <LayoutGrid className="w-4 h-4 text-amber-600" />
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 glass-panel p-4 border border-amber-500/30">
+        <div className="flex items-center gap-2 text-xs sm:text-sm text-zinc-300 font-medium">
+          <LayoutGrid className="w-4 h-4 text-amber-400" />
           <span>
-            Showing <strong className="text-zinc-900">{startIndex + 1}</strong> -{' '}
-            <strong className="text-zinc-900">{Math.min(startIndex + itemsPerPage, products.length)}</strong> of{' '}
-            <strong className="text-amber-700">{products.length}</strong> items
+            Showing <strong className="text-white">{startIndex + 1}</strong> -{' '}
+            <strong className="text-white">{Math.min(startIndex + itemsPerPage, products.length)}</strong> of{' '}
+            <strong className="text-amber-400">{products.length}</strong> items
           </span>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 text-xs text-zinc-500">
+          <div className="flex items-center gap-1.5 text-xs text-zinc-400">
             <span>Per page:</span>
             <select
               value={itemsPerPage}
@@ -63,7 +63,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
                 setItemsPerPage(Number(e.target.value));
                 setCurrentPage(1);
               }}
-              className="bg-white border border-amber-300 rounded px-2 py-1 text-zinc-900 outline-none"
+              className="bg-zinc-900 border border-amber-500/30 rounded px-2.5 py-1 text-white outline-none focus:border-amber-400"
             >
               <option value={8}>8</option>
               <option value={12}>12</option>
@@ -81,7 +81,7 @@ export const ProductGrid: React.FC<ProductGridProps> = ({
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
-              <span className="text-xs font-semibold px-2 text-zinc-700">
+              <span className="text-xs font-semibold px-2 text-zinc-300">
                 {currentPage} / {totalPages}
               </span>
               <button
